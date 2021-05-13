@@ -1,0 +1,78 @@
+digraph G {
+	nodesep="1";
+	ranksep="1";
+	node[shape="box"];
+	edge[arrowhead="open"];
+	
+	{
+		rank=source;
+		User;
+	}
+	{
+		rank=same;
+		SongRating;
+		BookRating;
+		BookReading;
+		MovieRating;
+		MovieViewing;
+	}
+	{
+		rank=same;
+		Song;
+		Book;
+		Movie;
+		BookGenre;
+		MovieGenre;
+	}
+	{
+		rank=same;
+		MusicGenre;
+	}
+	{
+		rank=same;
+		Artist;
+		Act;
+		Album;
+		Author;
+		Director;
+		Actor;
+	}
+
+
+	// An album has one act, but an act can have multiple albums.
+	Album -> Act [taillabel="1..N",headlabel="1"];
+
+	Album -> MusicGenre [taillabel="0..N",headlabel="1"];
+
+	// An act is comprised of one or more artists, and an artist
+	// can be part of one or more acts.
+	Act -> Artist [taillabel="1..N",headlabel="1..N",arrowhead="none"];
+
+	// A song is on one album, and an album is made up of one or
+	// more songs.
+	Song -> Album [taillabel="1..N",headlabel="1"];
+
+	// A song can have zero or more featured artists and an artist
+	// can be featured on zero or more songs.
+	Song -> Artist [taillabel="0..N",headlabel="0..N",arrowhead="none"];
+
+	SongRating -> Song [taillabel="0..N",headlabel="1"];
+	SongRating -> User [taillabel="0..N",headlabel="1"];
+
+	Book -> Author [taillabel="0..N",headlabel="1"];
+	Book -> BookGenre [taillabel="0..N",headlabel="1"];
+
+	BookRating -> Book [taillabel="0..N",headlabel="1"];
+	BookRating -> User [taillabel="0..N",headlabel="1"];
+
+	BookReading -> Book [taillabel="0..N",headlabel="1"];
+	BookReading -> User [taillabel="0..N",headlabel="1"];
+
+	Movie -> Director [taillabel="0..N",headlabel="1"];
+	Movie -> MovieGenre [taillabel="0..N",headlabel="1"];
+	Movie -> Actor [arrowhead="none",taillabel="0..N",headlabel="0..N"];
+	MovieRating -> Movie [taillabel="0..N",headlabel="1"];
+	MovieRating -> User [taillabel="0..N",headlabel="1"];
+	MovieViewing -> Movie [taillabel="0..N",headlabel="1"];
+	MovieViewing -> User [taillabel="0..N",headlabel="1"];
+}
