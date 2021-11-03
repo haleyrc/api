@@ -9,31 +9,8 @@ import (
 	"github.com/haleyrc/api/errors"
 )
 
-type Tx interface {
-	GetAuthor(ctx context.Context, id api.ID) (api.Author, error)
-	GetAuthors(ctx context.Context, offset, limit uint) ([]api.Author, error)
-	SaveAuthor(ctx context.Context, author api.Author) error
-	DeleteAuthor(ctx context.Context, id api.ID) error
-
-	GetBook(ctx context.Context, id api.ID) (api.Book, error)
-	GetBooks(ctx context.Context, offset, limit uint) ([]api.Book, error)
-	SaveBook(ctx context.Context, book api.Book) error
-	DeleteBook(ctx context.Context, id api.ID) error
-	AddAuthorToBook(ctx context.Context, book, author api.ID) error
-	RateBook(ctx context.Context, user, book api.ID, rating api.Rating) error
-	StartBook(ctx context.Context, user, book api.ID, timestamp time.Time) error
-	FinishBook(ctx context.Context, user, book api.ID, timestamp time.Time) error
-
-	GetBookGenre(ctx context.Context, id api.ID) (api.BookGenre, error)
-	GetBookGenres(ctx context.Context) ([]api.BookGenre, error)
-	SaveBookGenre(ctx context.Context, genre api.BookGenre) error
-	DeleteBookGenre(ctx context.Context, id api.ID) error
-}
-
 type BookService struct {
-	DB interface {
-		RunInTransaction(context.Context, func(context.Context, Tx) error) error
-	}
+	DB Database
 }
 
 type GetAuthorRequest struct {
@@ -44,14 +21,14 @@ type GetAuthorResponse struct {
 	Author api.Author
 }
 
-func (s BookService) GetAuthor(ec api.ExecutionContext, req GetAuthorRequest) (*GetAuthorResponse, error) {
+func (s BookService) GetAuthor(ctx context.Context, req GetAuthorRequest) (*GetAuthorResponse, error) {
 	if req.ID == "" {
 		return nil, fmt.Errorf("get author failed: %w",
 			errors.BadRequest{Message: "ID is required."})
 	}
 
 	var resp GetAuthorResponse
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		var err error
 		resp.Author, err = tx.GetAuthor(ctx, req.ID)
 		return err
@@ -79,9 +56,9 @@ type GetAuthorsResponse struct {
 	Limit   uint
 }
 
-func (s BookService) GetAuthors(ec api.ExecutionContext, req GetAuthorsRequest) (*GetAuthorsResponse, error) {
+func (s BookService) GetAuthors(ctx context.Context, req GetAuthorsRequest) (*GetAuthorsResponse, error) {
 	var resp GetAuthorsResponse
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		offset := req.Offset
 		limit := clampUint(1, req.Limit, MaxResults)
 
@@ -105,7 +82,7 @@ type SaveAuthorResponse struct {
 	Author api.Author
 }
 
-func (s BookService) SaveAuthor(ec api.ExecutionContext, req SaveAuthorRequest) (*SaveAuthorResponse, error) {
+func (s BookService) SaveAuthor(ctx context.Context, req SaveAuthorRequest) (*SaveAuthorResponse, error) {
 	if req.Name == "" {
 		return nil, fmt.Errorf("save author failed: %w",
 			errors.BadRequest{Message: "Author name can't be blank."})
@@ -118,7 +95,7 @@ func (s BookService) SaveAuthor(ec api.ExecutionContext, req SaveAuthorRequest) 
 	if author.ID == "" {
 		author.ID = api.NewID()
 	}
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		return tx.SaveAuthor(ctx, author)
 	})
 	if err != nil {
@@ -134,13 +111,13 @@ type DeleteAuthorRequest struct {
 
 type DeleteAuthorResponse struct{}
 
-func (s BookService) DeleteAuthor(ec api.ExecutionContext, req DeleteAuthorRequest) (*DeleteAuthorResponse, error) {
+func (s BookService) DeleteAuthor(ctx context.Context, req DeleteAuthorRequest) (*DeleteAuthorResponse, error) {
 	if req.ID == "" {
 		return nil, fmt.Errorf("delete author failed: %w",
 			errors.BadRequest{Message: "ID is required."})
 	}
 
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		return tx.DeleteAuthor(ctx, req.ID)
 	})
 	if err != nil {
@@ -158,14 +135,14 @@ type GetBookResponse struct {
 	Book api.Book
 }
 
-func (s BookService) GetBook(ec api.ExecutionContext, req GetBookRequest) (*GetBookResponse, error) {
+func (s BookService) GetBook(ctx context.Context, req GetBookRequest) (*GetBookResponse, error) {
 	if req.ID == "" {
 		return nil, fmt.Errorf("get book failed: %w",
 			errors.BadRequest{Message: "ID is required."})
 	}
 
 	var resp GetBookResponse
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		var err error
 		resp.Book, err = tx.GetBook(ctx, req.ID)
 		return err
@@ -193,18 +170,25 @@ type GetBooksResponse struct {
 	Limit  uint
 }
 
-func (s BookService) GetBooks(ec api.ExecutionContext, req GetBooksRequest) (*GetBooksResponse, error) {
-	var resp GetBooksResponse
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
-		offset := req.Offset
-		limit := clampUint(1, req.Limit, MaxResults)
+func (s BookService) GetBooks(ctx context.Context, req GetBooksRequest) (*GetBooksResponse, error) {
+	offset := req.Offset
+	limit := clampUint(1, req.Limit, MaxResults)
 
+	var books []api.Book
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		var err error
-		resp.Books, err = tx.GetBooks(ctx, offset, limit)
+		books, err = tx.GetBooks(ctx, offset, limit)
 		return err
 	})
 	if err != nil {
 		return nil, fmt.Errorf("get books failed: %w", err)
+	}
+
+	resp := GetBooksResponse{
+		Books:  books,
+		Count:  uint64(len(books)),
+		Offset: offset,
+		Limit:  limit,
 	}
 
 	return &resp, nil
@@ -236,7 +220,7 @@ type SaveBookResponse struct {
 	Book api.Book
 }
 
-func (s BookService) SaveBook(ec api.ExecutionContext, req SaveBookRequest) (*SaveBookResponse, error) {
+func (s BookService) SaveBook(ctx context.Context, req SaveBookRequest) (*SaveBookResponse, error) {
 	if req.Author == "" {
 		return nil, fmt.Errorf("save book failed: %w",
 			errors.BadRequest{Message: "Author is required."})
@@ -263,8 +247,10 @@ func (s BookService) SaveBook(ec api.ExecutionContext, req SaveBookRequest) (*Sa
 			// Required
 			ID:     req.ID.Value,
 			Format: req.Format,
-			Genre:  req.Genre,
-			Title:  req.Title,
+			Genre: api.BookGenre{
+				ID: req.Genre,
+			},
+			Title: req.Title,
 			// Optional
 			Anthology: req.Anthology,
 			ISBN10:    req.ISBN10,
@@ -280,7 +266,7 @@ func (s BookService) SaveBook(ec api.ExecutionContext, req SaveBookRequest) (*Sa
 		resp.Book.ID = api.NewID()
 	}
 
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		if err := tx.SaveBook(ctx, resp.Book); err != nil {
 			return err
 		}
@@ -302,13 +288,13 @@ type DeleteBookRequest struct {
 
 type DeleteBookResponse struct{}
 
-func (s BookService) DeleteBook(ec api.ExecutionContext, req DeleteBookRequest) (*DeleteBookResponse, error) {
+func (s BookService) DeleteBook(ctx context.Context, req DeleteBookRequest) (*DeleteBookResponse, error) {
 	if req.ID == "" {
 		return nil, fmt.Errorf("delete book failed: %w",
 			errors.BadRequest{Message: "ID is required."})
 	}
 
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		return tx.DeleteBook(ctx, req.ID)
 	})
 	if err != nil {
@@ -321,11 +307,12 @@ func (s BookService) DeleteBook(ec api.ExecutionContext, req DeleteBookRequest) 
 type RateBookRequest struct {
 	Book   api.ID
 	Rating api.Rating
+	User   api.ID
 }
 
 type RateBookResponse struct{}
 
-func (s BookService) RateBook(ec api.ExecutionContext, req RateBookRequest) (*RateBookResponse, error) {
+func (s BookService) RateBook(ctx context.Context, req RateBookRequest) (*RateBookResponse, error) {
 	if req.Book == "" {
 		return nil, fmt.Errorf("rate book failed: %w",
 			errors.BadRequest{Message: "Book is required."})
@@ -335,8 +322,8 @@ func (s BookService) RateBook(ec api.ExecutionContext, req RateBookRequest) (*Ra
 			errors.BadRequest{Message: "Rating must be an number between 0 and 5."})
 	}
 
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
-		return tx.RateBook(ctx, ec.User.ID, req.Book, req.Rating)
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
+		return tx.RateBook(ctx, req.User, req.Book, req.Rating)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("rate book failed: %w", err)
@@ -347,18 +334,19 @@ func (s BookService) RateBook(ec api.ExecutionContext, req RateBookRequest) (*Ra
 
 type StartBookRequest struct {
 	Book api.ID
+	User api.ID
 }
 
 type StartBookResponse struct{}
 
-func (s BookService) StartBook(ec api.ExecutionContext, req StartBookRequest) (*StartBookResponse, error) {
+func (s BookService) StartBook(ctx context.Context, req StartBookRequest) (*StartBookResponse, error) {
 	if req.Book == "" {
 		return nil, fmt.Errorf("start book failed: %w",
 			errors.BadRequest{Message: "Book is required."})
 	}
 
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
-		return tx.StartBook(ctx, ec.User.ID, req.Book, time.Now())
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
+		return tx.StartBook(ctx, req.User, req.Book, time.Now())
 	})
 	if err != nil {
 		return nil, fmt.Errorf("start book failed: %w", err)
@@ -369,18 +357,19 @@ func (s BookService) StartBook(ec api.ExecutionContext, req StartBookRequest) (*
 
 type FinishBookRequest struct {
 	Book api.ID
+	User api.ID
 }
 
 type FinishBookResponse struct{}
 
-func (s BookService) FinishBook(ec api.ExecutionContext, req FinishBookRequest) (*FinishBookResponse, error) {
+func (s BookService) FinishBook(ctx context.Context, req FinishBookRequest) (*FinishBookResponse, error) {
 	if req.Book == "" {
 		return nil, fmt.Errorf("start book failed: %w",
 			errors.BadRequest{Message: "Book is required."})
 	}
 
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
-		return tx.FinishBook(ctx, ec.User.ID, req.Book, time.Now())
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
+		return tx.FinishBook(ctx, req.User, req.Book, time.Now())
 	})
 	if err != nil {
 		return nil, fmt.Errorf("start book failed: %w", err)
@@ -397,14 +386,14 @@ type GetBookGenreResponse struct {
 	Genre api.BookGenre
 }
 
-func (s BookService) GetBookGenre(ec api.ExecutionContext, req GetBookGenreRequest) (*GetBookGenreResponse, error) {
+func (s BookService) GetBookGenre(ctx context.Context, req GetBookGenreRequest) (*GetBookGenreResponse, error) {
 	if req.ID == "" {
 		return nil, fmt.Errorf("get book genre failed: %w",
 			errors.BadRequest{Message: "ID is required."})
 	}
 
 	var resp GetBookGenreResponse
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		var err error
 		resp.Genre, err = tx.GetBookGenre(ctx, req.ID)
 		return err
@@ -427,9 +416,9 @@ type GetBookGenresResponse struct {
 	Genres []api.BookGenre
 }
 
-func (s BookService) GetBookGenres(ec api.ExecutionContext, req GetBookGenresRequest) (*GetBookGenresResponse, error) {
+func (s BookService) GetBookGenres(ctx context.Context, req GetBookGenresRequest) (*GetBookGenresResponse, error) {
 	var resp GetBookGenresResponse
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		var err error
 		resp.Genres, err = tx.GetBookGenres(ctx)
 		return err
@@ -450,7 +439,7 @@ type SaveBookGenreResponse struct {
 	Genre api.BookGenre
 }
 
-func (s BookService) SaveBookGenre(ec api.ExecutionContext, req SaveBookGenreRequest) (*SaveBookGenreResponse, error) {
+func (s BookService) SaveBookGenre(ctx context.Context, req SaveBookGenreRequest) (*SaveBookGenreResponse, error) {
 	if req.Name == "" {
 		return nil, fmt.Errorf("save book genre failed: %w",
 			errors.BadRequest{Message: "Genre name can't be blank."})
@@ -463,7 +452,7 @@ func (s BookService) SaveBookGenre(ec api.ExecutionContext, req SaveBookGenreReq
 	if genre.ID == "" {
 		genre.ID = api.NewID()
 	}
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		return tx.SaveBookGenre(ctx, genre)
 	})
 	if err != nil {
@@ -479,13 +468,13 @@ type DeleteBookGenreRequest struct {
 
 type DeleteBookGenreResponse struct{}
 
-func (s BookService) DeleteBookGenre(ec api.ExecutionContext, req DeleteBookGenreRequest) (*DeleteBookGenreResponse, error) {
+func (s BookService) DeleteBookGenre(ctx context.Context, req DeleteBookGenreRequest) (*DeleteBookGenreResponse, error) {
 	if req.ID == "" {
 		return nil, fmt.Errorf("delete book genre failed: %w",
 			errors.BadRequest{Message: "ID is required."})
 	}
 
-	err := s.DB.RunInTransaction(ec.Ctx, func(ctx context.Context, tx Tx) error {
+	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		return tx.DeleteBookGenre(ctx, req.ID)
 	})
 	if err != nil {

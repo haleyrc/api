@@ -1,0 +1,11 @@
+{{ define "content" }}
+
+{{ if .Book }}
+<div>
+    <h1>{{ .Book.Title }}</h1>
+    <p>{{ .Book.Format }}</p>
+    <p><a href="/books/genres/{{ .Book.Genre.ID }}">{{ .Book.Genre.Name }}</a></p>
+</div>
+{{ end }}
+
+{{ end }}

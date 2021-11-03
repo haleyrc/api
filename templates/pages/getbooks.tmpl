@@ -1,0 +1,22 @@
+{{ define "content" }}
+
+<table>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Format</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {{ range .Books }}
+        <tr>
+            <td><a href="/books/{{ .ID }}">{{ .Title }}</a></td>
+            <td>{{ .Format }}</td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+<div>Total: {{ .TotalBooks }}</div>
+
+{{ end }}

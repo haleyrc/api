@@ -53,7 +53,7 @@ type Book struct {
 	ID ID
 
 	// Foreign Keys
-	Genre ID
+	Genre BookGenre
 
 	// Required
 

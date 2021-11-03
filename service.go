@@ -2,66 +2,61 @@ package api
 
 import "context"
 
-type ExecutionContext struct {
-	Ctx  context.Context
-	User User
-}
-
 type Service interface {
-	GetActor(ExecutionContext, GetActorRequest) (*GetActorResponse, error)
-	GetActors(ExecutionContext, GetActorsRequest) (*GetActorsResponse, error)
-	SaveActor(ExecutionContext, SaveActorRequest) (*SaveActorResponse, error)
-	DeleteActor(ExecutionContext, DeleteActorRequest) (*DeleteActorResponse, error)
+	GetActor(context.Context, GetActorRequest) (*GetActorResponse, error)
+	GetActors(context.Context, GetActorsRequest) (*GetActorsResponse, error)
+	SaveActor(context.Context, SaveActorRequest) (*SaveActorResponse, error)
+	DeleteActor(context.Context, DeleteActorRequest) (*DeleteActorResponse, error)
 
-	GetDirector(ExecutionContext, GetDirectorRequest) (*GetDirectorResponse, error)
-	GetDirectors(ExecutionContext, GetDirectorsRequest) (*GetDirectorsResponse, error)
-	SaveDirector(ExecutionContext, SaveDirectorRequest) (*SaveDirectorResponse, error)
-	DeleteDirector(ExecutionContext, DeleteDirectorRequest) (*DeleteDirectorResponse, error)
+	GetDirector(context.Context, GetDirectorRequest) (*GetDirectorResponse, error)
+	GetDirectors(context.Context, GetDirectorsRequest) (*GetDirectorsResponse, error)
+	SaveDirector(context.Context, SaveDirectorRequest) (*SaveDirectorResponse, error)
+	DeleteDirector(context.Context, DeleteDirectorRequest) (*DeleteDirectorResponse, error)
 
-	GetMovieGenre(ExecutionContext, GetMovieGenreRequest) (*GetMovieGenreResponse, error)
-	GetMovieGenres(ExecutionContext, GetMovieGenresRequest) (*GetMovieGenresResponse, error)
-	SaveMovieGenre(ExecutionContext, SaveMovieGenreRequest) (*SaveMovieGenreResponse, error)
-	DeleteMovieGenre(ExecutionContext, DeleteMovieGenreRequest) (*DeleteMovieGenreResponse, error)
+	GetMovieGenre(context.Context, GetMovieGenreRequest) (*GetMovieGenreResponse, error)
+	GetMovieGenres(context.Context, GetMovieGenresRequest) (*GetMovieGenresResponse, error)
+	SaveMovieGenre(context.Context, SaveMovieGenreRequest) (*SaveMovieGenreResponse, error)
+	DeleteMovieGenre(context.Context, DeleteMovieGenreRequest) (*DeleteMovieGenreResponse, error)
 
-	GetMovie(ExecutionContext, GetMovieRequest) (*GetMovieResponse, error)
-	GetMovies(ExecutionContext, GetMoviesRequest) (*GetMoviesResponse, error)
-	SaveMovie(ExecutionContext, SaveMovieRequest) (*SaveMovieResponse, error)
-	DeleteMovie(ExecutionContext, DeleteMovieRequest) (*DeleteMovieResponse, error)
+	GetMovie(context.Context, GetMovieRequest) (*GetMovieResponse, error)
+	GetMovies(context.Context, GetMoviesRequest) (*GetMoviesResponse, error)
+	SaveMovie(context.Context, SaveMovieRequest) (*SaveMovieResponse, error)
+	DeleteMovie(context.Context, DeleteMovieRequest) (*DeleteMovieResponse, error)
 
-	RateMovie(ExecutionContext, RateMovieRequest) (*RateMovieResponse, error)
-	WatchMovie(ExecutionContext, WatchMovieRequest) (*WatchMovieResponse, error)
+	RateMovie(context.Context, RateMovieRequest) (*RateMovieResponse, error)
+	WatchMovie(context.Context, WatchMovieRequest) (*WatchMovieResponse, error)
 
-	GetArtist(ExecutionContext, GetArtistRequest) (*GetArtistResponse, error)
-	GetArtists(ExecutionContext, GetArtistsRequest) (*GetArtistsResponse, error)
-	SaveArtist(ExecutionContext, SaveArtistRequest) (*SaveArtistResponse, error)
-	DeleteArtist(ExecutionContext, DeleteArtistRequest) (*DeleteArtistResponse, error)
+	GetArtist(context.Context, GetArtistRequest) (*GetArtistResponse, error)
+	GetArtists(context.Context, GetArtistsRequest) (*GetArtistsResponse, error)
+	SaveArtist(context.Context, SaveArtistRequest) (*SaveArtistResponse, error)
+	DeleteArtist(context.Context, DeleteArtistRequest) (*DeleteArtistResponse, error)
 
-	AssociateArtistWithAct(ExecutionContext, AssociateArtistWithActRequest) (*AssociateArtistWithActResponse, error)
+	AssociateArtistWithAct(context.Context, AssociateArtistWithActRequest) (*AssociateArtistWithActResponse, error)
 
-	GetAct(ExecutionContext, GetActRequest) (*GetActResponse, error)
-	GetActs(ExecutionContext, GetActsRequest) (*GetActsResponse, error)
-	SaveAct(ExecutionContext, SaveActRequest) (*SaveActResponse, error)
-	DeleteAct(ExecutionContext, DeleteActRequest) (*DeleteActResponse, error)
+	GetAct(context.Context, GetActRequest) (*GetActResponse, error)
+	GetActs(context.Context, GetActsRequest) (*GetActsResponse, error)
+	SaveAct(context.Context, SaveActRequest) (*SaveActResponse, error)
+	DeleteAct(context.Context, DeleteActRequest) (*DeleteActResponse, error)
 
-	GetAlbum(ExecutionContext, GetAlbumRequest) (*GetAlbumResponse, error)
-	GetAlbums(ExecutionContext, GetAlbumsRequest) (*GetAlbumsResponse, error)
-	SaveAlbum(ExecutionContext, SaveAlbumRequest) (*SaveAlbumResponse, error)
-	DeleteAlbum(ExecutionContext, DeleteAlbumRequest) (*DeleteAlbumResponse, error)
+	GetAlbum(context.Context, GetAlbumRequest) (*GetAlbumResponse, error)
+	GetAlbums(context.Context, GetAlbumsRequest) (*GetAlbumsResponse, error)
+	SaveAlbum(context.Context, SaveAlbumRequest) (*SaveAlbumResponse, error)
+	DeleteAlbum(context.Context, DeleteAlbumRequest) (*DeleteAlbumResponse, error)
 
-	GetMusicGenre(ExecutionContext, GetMusicGenreRequest) (*GetMusicGenreResponse, error)
-	GetMusicGenres(ExecutionContext, GetMusicGenresRequest) (*GetMusicGenresResponse, error)
-	SaveMusicGenres(ExecutionContext, SaveMusicGenresRequest) (*SaveMusicGenresResponse, error)
-	DeleteMusicGenres(ExecutionContext, DeleteMusicGenresRequest) (*DeleteMusicGenresResponse, error)
+	GetMusicGenre(context.Context, GetMusicGenreRequest) (*GetMusicGenreResponse, error)
+	GetMusicGenres(context.Context, GetMusicGenresRequest) (*GetMusicGenresResponse, error)
+	SaveMusicGenres(context.Context, SaveMusicGenresRequest) (*SaveMusicGenresResponse, error)
+	DeleteMusicGenres(context.Context, DeleteMusicGenresRequest) (*DeleteMusicGenresResponse, error)
 
-	GetSong(ExecutionContext, GetSongRequest) (*GetSongResponse, error)
-	GetSongs(ExecutionContext, GetSongsRequest) (*GetSongsResponse, error)
-	SaveSong(ExecutionContext, SaveSongRequest) (*SaveSongResponse, error)
-	DeleteSong(ExecutionContext, DeleteSongRequest) (*DeleteSongResponse, error)
+	GetSong(context.Context, GetSongRequest) (*GetSongResponse, error)
+	GetSongs(context.Context, GetSongsRequest) (*GetSongsResponse, error)
+	SaveSong(context.Context, SaveSongRequest) (*SaveSongResponse, error)
+	DeleteSong(context.Context, DeleteSongRequest) (*DeleteSongResponse, error)
 
-	RateSong(ExecutionContext, RateSongRequest) (*RateSongResponse, error)
+	RateSong(context.Context, RateSongRequest) (*RateSongResponse, error)
 
-	GetUser(ExecutionContext, GetUserRequest) (*GetUserResponse, error)
-	GetUsers(ExecutionContext, GetUsersRequest) (*GetUsersResponse, error)
-	SaveUser(ExecutionContext, SaveUserRequest) (*SaveUserResponse, error)
-	DeleteUser(ExecutionContext, DeleteUserRequest) (*DeleteUserResponse, error)
+	GetUser(context.Context, GetUserRequest) (*GetUserResponse, error)
+	GetUsers(context.Context, GetUsersRequest) (*GetUsersResponse, error)
+	SaveUser(context.Context, SaveUserRequest) (*SaveUserResponse, error)
+	DeleteUser(context.Context, DeleteUserRequest) (*DeleteUserResponse, error)
 }

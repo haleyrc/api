@@ -1,0 +1,36 @@
+<!doctype html>
+
+<html>
+    <head>
+        <title>Haley Lab</title>
+    </head>
+
+    <body>
+        {{ template "header" . }}
+        {{ template "flash" . }}
+        <main>
+            {{ block "content" . }}{{ end }}
+        </main>
+        {{ template "footer" }}
+    </body>
+</html>
+
+{{ define "header" }}
+<header>
+{{ if .User }}
+<a href="/auth/logout">Log Out</a>
+{{ else }}
+<a href="/auth/login">Log In</a>
+{{ end }}
+</header>
+{{ end }}
+
+{{ define "footer" }}
+<footer></footer>
+{{ end }}
+
+{{ define "flash" }}
+{{ range .Flash }}
+<div class="{{ .Type }}">{{ .Message }}</div>
+{{ end }}
+{{ end }}
