@@ -46,12 +46,3 @@ func (s *Server) withScope(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
-
-func findUser(users map[string]*api.User, id string) (*api.User, bool) {
-	for _, user := range users {
-		if string(user.ID) == id {
-			return user, true
-		}
-	}
-	return nil, false
-}
