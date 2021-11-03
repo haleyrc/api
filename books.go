@@ -1,48 +1,111 @@
 package api
 
-type Author struct {
-	ID       ID
-	Name     string
-	NumBooks int
+import (
+	"time"
+)
+
+type BookFormat string
+
+func (bf BookFormat) Valid() bool {
+	switch bf {
+	case Hardcover, Paperback, PDF:
+		return true
+	default:
+		return false
+	}
 }
 
-type AuthorWithBooks struct {
-	Author
-	Books []ID
+const (
+	Hardcover BookFormat = "Hardcover"
+	Paperback BookFormat = "Paperback"
+	PDF       BookFormat = "PDF"
+)
+
+type BookType string
+
+const (
+	ComicBook BookType = "Comic Book"
+	Reference BookType = "Reference"
+	Novel     BookType = "Novel"
+)
+
+type Anthology struct {
+	ID ID
+
+	// Required
+
+	Name string
+}
+
+type Author struct {
+	ID ID
+
+	// Required
+
+	Name string
+
+	// Computed
+
+	NumBooks int
 }
 
 type Book struct {
-	Author    ID
-	BookGenre ID
-	ID        ID
-	ISBN10    string
-	ISBN13    string
-	Published Year
-	Title     string
+	ID ID
+
+	// Foreign Keys
+	Genre ID
+
+	// Required
+
+	Format BookFormat
+	Title  string
+
+	// Optional
+
+	Anthology MaybeID
+	ISBN10    MaybeString
+	ISBN13    MaybeString
+	Published MaybeInt
+	Publisher MaybeID
+	Subtitle  MaybeString
+	Type      MaybeBookType
+	Volume    MaybeInt
+
+	// Authors      []ID
+	// Illustrators []ID
 }
 
 type BookRating struct {
-	Book   ID
-	ID     ID
-	Rating ThumbRating
-	User   ID
+	ID ID
+
+	// Foreign Keys
+
+	Book ID
+	User ID
+
+	Rating Rating
 }
 
 type BookReading struct {
-	Book     ID
-	ID       ID
-	Started  Time
-	Finished Time
-	User     ID
+	ID ID
+
+	// Foreign Keys
+
+	Book ID
+	User ID
+
+	Started  time.Time
+	Finished time.Time
 }
 
 type BookGenre struct {
-	ID       ID
-	Name     string
-	NumBooks int
-}
+	ID ID
 
-type BookGenreWithBooks struct {
-	BookGenre
-	Books []ID
+	// Required
+
+	Name string
+
+	// Computed
+
+	NumBooks int
 }
