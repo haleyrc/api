@@ -5,8 +5,9 @@ import "fmt"
 type ErrorKind string
 
 const (
-	KindBadRequest ErrorKind = "bad-request"
-	KindInternal   ErrorKind = "internal"
+	KindBadRequest       ErrorKind = "bad-request"
+	KindInternal         ErrorKind = "internal"
+	KindResourceNotFound ErrorKind = "resource-not-found"
 )
 
 func Kind(err error) ErrorKind {

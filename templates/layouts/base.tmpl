@@ -17,11 +17,16 @@
 
 {{ define "header" }}
 <header>
-{{ if .User }}
-<a href="/auth/logout">Log Out</a>
-{{ else }}
-<a href="/auth/login">Log In</a>
-{{ end }}
+    <nav>
+        <div><a href="/">Home</a></div>
+        <div><a href="/books">Books</a></div>
+    </nav>
+
+    {{ if .User }}
+        <a href="/auth/logout">Log Out</a>
+    {{ else }}
+        <a href="/auth/login">Log In</a>
+    {{ end }}
 </header>
 {{ end }}
 

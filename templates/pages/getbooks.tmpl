@@ -9,7 +9,7 @@
     </thead>
 
     <tbody>
-        {{ range .Books }}
+        {{ range .Data.Books }}
         <tr>
             <td><a href="/books/{{ .ID }}">{{ .Title }}</a></td>
             <td>{{ .Format }}</td>
@@ -17,6 +17,6 @@
         {{ end }}
     </tbody>
 </table>
-<div>Total: {{ .TotalBooks }}</div>
+<div>Total: {{ .Data.TotalBooks }}</div>
 
 {{ end }}

@@ -22,19 +22,18 @@ func (s *Server) withScope(next http.Handler) http.Handler {
 			return
 		}
 
-		var sc scope
-
 		cookie, err := r.Cookie("user")
-		if err != nil {
-			if err != http.ErrNoCookie {
-				fmt.Println(err)
-			}
-		} else {
+		if err != nil && err != http.ErrNoCookie {
+			fmt.Println(err)
+		}
+
+		var sc scope
+		if cookie != nil {
 			gur, err := s.Users.GetUser(ctx, service.GetUserRequest{
 				ID: api.ID(cookie.Value),
 			})
 			if err != nil {
-				fmt.Printf("invalid user: %s\n", cookie.Value)
+				s.Logger.Println("invalid user:", cookie.Value)
 				http.Redirect(w, r, "/auth/logout", http.StatusMovedPermanently)
 				return
 			}

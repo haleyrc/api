@@ -1,72 +1,66 @@
 package app
 
 import (
+	"context"
 	"net/http"
-	"time"
 
+	"github.com/haleyrc/api/errors"
+	"github.com/haleyrc/api/pages"
 	"github.com/haleyrc/api/service"
 )
 
-func (s *Server) login() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		sc := scopeFromContext(ctx)
-
-		if err := r.ParseForm(); err != nil {
-			panic(err)
-		}
-
-		name := r.FormValue("name")
-		gur, err := s.Users.GetUser(ctx, service.GetUserRequest{Name: name})
-		if err != nil {
-			// TODO: Render a 400 if wasn't a user not found
-			data := newPage(sc)
-			data.Error(err.Error())
-			s.templates.Login.Render(401, w, data)
-			return
-		}
-
-		http.SetCookie(w, &http.Cookie{
-			Name:     "user",
-			Value:    string(gur.User.ID),
-			MaxAge:   int(time.Hour.Seconds()),
-			Secure:   s.secure,
-			HttpOnly: true,
-			Path:     "/",
-		})
-
-		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+func (s *Server) DoLogin(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		s.RenderError(400, err.Error())(w, r)
+		return
 	}
+	f := s.doLogin(r.Context(), r.FormValue("name"))
+	f(w, r)
 }
 
-func (s *Server) loginPage() http.HandlerFunc {
-	type PageData struct {
-		page
-	}
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		sc := scopeFromContext(ctx)
-
-		if sc.User != nil {
-			http.Redirect(w, r, "/", http.StatusMovedPermanently)
-			return
+func (s *Server) doLogin(ctx context.Context, name string) http.HandlerFunc {
+	gur, err := s.Users.GetUser(ctx, service.GetUserRequest{
+		Name: name,
+	})
+	if err != nil {
+		switch errors.Kind(err) {
+		case errors.KindResourceNotFound:
+			var data pages.Login
+			data.Error("Invalid username or password.")
+			return s.Render(401, s.templates.Login, data)
+		default:
+			return s.RenderError(500, err.Error())
 		}
-
-		page := newPage(sc)
-		s.templates.Login.Render(200, w, PageData{page: page})
 	}
+
+	// TODO: This works, but it feels kind of gross
+	return s.All(
+		s.SetCookie("user", string(gur.User.ID)),
+		s.Redirect(301, "/"),
+	)
 }
 
-func (s *Server) logout() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		http.SetCookie(w, &http.Cookie{
-			Name:     "user",
-			Value:    "",
-			MaxAge:   -1,
-			Secure:   s.secure,
-			HttpOnly: true,
-			Path:     "/",
-		})
-		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+func (s *Server) GetLogin(w http.ResponseWriter, r *http.Request) {
+	scope := scopeFromContext(r.Context())
+	if scope.User != nil {
+		s.Redirect(301, "/")(w, r)
 	}
+	f := s.getLogin(r.Context())
+	f(w, r)
+}
+
+func (s *Server) getLogin(ctx context.Context) http.HandlerFunc {
+	return s.Render(200, s.templates.Login, nil)
+}
+
+func (s *Server) DoLogout(w http.ResponseWriter, r *http.Request) {
+	f := s.doLogout(r.Context())
+	f(w, r)
+}
+
+func (s *Server) doLogout(ctx context.Context) http.HandlerFunc {
+	return s.All(
+		s.ClearCookie("user"),
+		s.Redirect(301, "/"),
+	)
 }
