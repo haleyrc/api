@@ -13,12 +13,12 @@ type Database interface {
 
 type Tx interface {
 	GetAuthor(ctx context.Context, id api.ID) (api.Author, error)
-	GetAuthors(ctx context.Context, offset, limit uint) ([]api.Author, error)
+	GetAuthors(ctx context.Context, filter api.AuthorsFilter) ([]api.Author, error)
 	SaveAuthor(ctx context.Context, author api.Author) error
 	DeleteAuthor(ctx context.Context, id api.ID) error
 
 	GetBook(ctx context.Context, id api.ID) (api.Book, error)
-	GetBooks(ctx context.Context, offset, limit uint) ([]api.Book, error)
+	GetBooks(ctx context.Context, filter api.BooksFilter) ([]api.Book, uint, error)
 	SaveBook(ctx context.Context, book api.Book) error
 	DeleteBook(ctx context.Context, id api.ID) error
 	AddAuthorToBook(ctx context.Context, book, author api.ID) error
@@ -33,4 +33,5 @@ type Tx interface {
 
 	GetUserByID(ctx context.Context, id api.ID) (api.User, error)
 	GetUserByName(ctx context.Context, name string) (api.User, error)
+	SaveUser(ctx context.Context, user api.User) error
 }

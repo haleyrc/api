@@ -1,0 +1,50 @@
+<!doctype html>
+
+<html>
+    <head>
+        <title>Haley Lab</title>
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        @font-face {
+            font-family: system;
+            font-style: normal;
+            font-weight: 300;
+            src: local(".SFNSText-Light"), local(".HelveticaNeueDeskInterface-Light"), local(".LucidaGrandeUI"), local("Ubuntu Light"), local("Segoe UI Light"), local("Roboto-Light"), local("DroidSans"), local("Tahoma");
+        }
+
+        body {
+            font-family: "system";
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* Layout specific CSS goes here */
+        {{ template "layout_css" }}
+        </style>
+    </head>
+
+    <body>
+        {{ template "layout" . }}
+        {{ template "footer" }}
+        {{ template "data" . }}
+    </body>
+</html>
+
+
+{{ define "footer" }}
+<footer></footer>
+{{ end }}
+
+{{ define "data" }}
+<details>
+    <summary>Raw Data</summary>
+    <pre>{{ . | dump }}</pre>
+</details>
+{{ end }}

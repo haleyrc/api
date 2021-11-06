@@ -1,4 +1,6 @@
-{{ define "content" }}
+{{ define "library_content" }}
+
+<a href="books/new">Add a book</a>
 
 <table>
     <thead>
@@ -11,12 +13,13 @@
     <tbody>
         {{ range .Data.Books }}
         <tr>
-            <td><a href="/books/{{ .ID }}">{{ .Title }}</a></td>
+            <td><a href="/library/books/{{ .ID }}">{{ .Title }}</a></td>
             <td>{{ .Format }}</td>
         </tr>
         {{ end }}
     </tbody>
 </table>
+
 <div>Total: {{ .Data.TotalBooks }}</div>
 
 {{ end }}

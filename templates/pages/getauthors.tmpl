@@ -1,0 +1,23 @@
+{{ define "content" }}
+
+<a href="/authors/new">Add an author</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {{ range .Data.Authors }}
+        <tr>
+            <td><a href="/authors/{{ .ID }}">{{ .Name }}</a></td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+
+<div>Total: {{ .Data.TotalAuthors }}</div>
+
+{{ end }}

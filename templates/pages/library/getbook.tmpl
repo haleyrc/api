@@ -1,0 +1,23 @@
+{{ define "library_content" }}
+
+{{ with .Data }}
+<div>
+    <h1>{{ .Book.Title }}</h1>
+    <div>
+        <h2>Authors</h2>
+        <ul>
+        {{ range .Authors }}
+            <li><a href="/library/authors/{{ .ID }}">{{ .Name }}</a></li>
+        {{ end }}
+        </ul>
+    </div>
+    <p>{{ .Book.Format }}</p>
+    <p><a href="/library/genres/{{ .Genre.ID }}">{{ .Genre.Name }}</a></p>
+</div>
+
+<form action="/library/books/{{ .Book.ID }}/delete" method="POST">
+    <button type="submit">Delete</button>
+</form>
+{{ end }}
+
+{{ end }}

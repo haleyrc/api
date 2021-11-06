@@ -42,7 +42,7 @@ func (s BookService) GetAuthor(ctx context.Context, req GetAuthorRequest) (*GetA
 
 type GetAuthorsRequest struct {
 	// Filters
-	// TODO
+	IDs []api.ID
 
 	// Pagination
 	Offset uint
@@ -59,11 +59,10 @@ type GetAuthorsResponse struct {
 func (s BookService) GetAuthors(ctx context.Context, req GetAuthorsRequest) (*GetAuthorsResponse, error) {
 	var resp GetAuthorsResponse
 	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
-		offset := req.Offset
-		limit := clampUint(1, req.Limit, MaxResults)
-
 		var err error
-		resp.Authors, err = tx.GetAuthors(ctx, offset, limit)
+		resp.Authors, err = tx.GetAuthors(ctx, api.AuthorsFilter{
+			IDs: req.IDs,
+		})
 		return err
 	})
 	if err != nil {
@@ -74,7 +73,7 @@ func (s BookService) GetAuthors(ctx context.Context, req GetAuthorsRequest) (*Ge
 }
 
 type SaveAuthorRequest struct {
-	ID   api.ID
+	ID   api.MaybeID
 	Name string
 }
 
@@ -89,7 +88,7 @@ func (s BookService) SaveAuthor(ctx context.Context, req SaveAuthorRequest) (*Sa
 	}
 
 	author := api.Author{
-		ID:   req.ID,
+		ID:   req.ID.Value,
 		Name: req.Name,
 	}
 	if author.ID == "" {
@@ -156,7 +155,7 @@ func (s BookService) GetBook(ctx context.Context, req GetBookRequest) (*GetBookR
 
 type GetBooksRequest struct {
 	// Filters
-	// TODO
+	Author api.MaybeID
 
 	// Pagination
 	Offset uint
@@ -165,7 +164,7 @@ type GetBooksRequest struct {
 
 type GetBooksResponse struct {
 	Books  []api.Book
-	Count  uint64
+	Count  uint
 	Offset uint
 	Limit  uint
 }
@@ -175,9 +174,12 @@ func (s BookService) GetBooks(ctx context.Context, req GetBooksRequest) (*GetBoo
 	limit := clampUint(1, req.Limit, MaxResults)
 
 	var books []api.Book
+	var count uint
 	err := s.DB.RunInTransaction(ctx, func(ctx context.Context, tx Tx) error {
 		var err error
-		books, err = tx.GetBooks(ctx, offset, limit)
+		books, count, err = tx.GetBooks(ctx, api.BooksFilter{
+			Author: req.Author,
+		})
 		return err
 	})
 	if err != nil {
@@ -186,7 +188,7 @@ func (s BookService) GetBooks(ctx context.Context, req GetBooksRequest) (*GetBoo
 
 	resp := GetBooksResponse{
 		Books:  books,
-		Count:  uint64(len(books)),
+		Count:  count,
 		Offset: offset,
 		Limit:  limit,
 	}
@@ -245,12 +247,11 @@ func (s BookService) SaveBook(ctx context.Context, req SaveBookRequest) (*SaveBo
 	resp := SaveBookResponse{
 		Book: api.Book{
 			// Required
-			ID:     req.ID.Value,
-			Format: req.Format,
-			Genre: api.BookGenre{
-				ID: req.Genre,
-			},
-			Title: req.Title,
+			ID:      req.ID.Value,
+			Format:  req.Format,
+			Genre:   req.Genre,
+			Authors: []api.ID{req.Author},
+			Title:   req.Title,
 			// Optional
 			Anthology: req.Anthology,
 			ISBN10:    req.ISBN10,

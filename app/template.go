@@ -4,17 +4,30 @@ import (
 	"fmt"
 	gotemplate "html/template"
 	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
+func dump(data interface{}) string {
+	return spew.Sdump(data)
+}
+
 func newTemplate(name string) template {
-	t, err := gotemplate.ParseFiles("templates/layouts/base.tmpl", "templates/pages/"+name+".tmpl")
+	funcs := gotemplate.FuncMap{
+		"dump": dump,
+	}
+
+	filename := name + ".tmpl"
+	path := filepath.Join("templates", "pages", filename)
+	t, err := gotemplate.New(filename).Funcs(funcs).ParseFiles(path, "templates/layouts/threepane.tmpl", "templates/base.tmpl")
 	if err != nil {
-		panic(fmt.Errorf("failed to parse template %s: %v", name, err))
+		fmt.Printf("failed to parse template %s: %v\n", name, err)
+		os.Exit(1)
 	}
-	return template{
-		name: name,
-		t:    t,
-	}
+
+	return template{name: filename, t: t}
 }
 
 type template struct {
@@ -24,7 +37,7 @@ type template struct {
 
 func (t template) Render(code int, w http.ResponseWriter, pageData interface{}) {
 	w.WriteHeader(code)
-	if err := t.t.Execute(w, pageData); err != nil {
-		panic(fmt.Errorf("failed to render template %s: %v", t.name, err))
+	if err := t.t.ExecuteTemplate(w, "base.tmpl", pageData); err != nil {
+		fmt.Printf("failed to render template %s: %v\n", t.name, err)
 	}
 }

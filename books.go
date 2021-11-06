@@ -23,6 +23,15 @@ const (
 
 type BookType string
 
+func (bt BookType) Valid() bool {
+	switch bt {
+	case ComicBook, Reference, Novel:
+		return true
+	default:
+		return false
+	}
+}
+
 const (
 	ComicBook BookType = "Comic Book"
 	Reference BookType = "Reference"
@@ -37,6 +46,10 @@ type Anthology struct {
 	Name string
 }
 
+type AuthorsFilter struct {
+	IDs []ID
+}
+
 type Author struct {
 	ID ID
 
@@ -49,11 +62,16 @@ type Author struct {
 	NumBooks int
 }
 
+type BooksFilter struct {
+	Author MaybeID
+}
+
 type Book struct {
 	ID ID
 
 	// Foreign Keys
-	Genre BookGenre
+	Genre   ID
+	Authors []ID
 
 	// Required
 
@@ -70,9 +88,15 @@ type Book struct {
 	Subtitle  MaybeString
 	Type      MaybeBookType
 	Volume    MaybeInt
+}
 
-	// Authors      []ID
-	// Illustrators []ID
+func (b Book) HasAuthorWithID(id ID) bool {
+	for _, value := range b.Authors {
+		if value == id {
+			return true
+		}
+	}
+	return false
 }
 
 type BookRating struct {

@@ -29,15 +29,6 @@ type Page struct {
 	User  *api.User
 }
 
-type BookGet struct {
-	Book *api.Book
-}
-
-type BooksGet struct {
-	Books      []api.Book
-	TotalBooks uint64
-}
-
 type Login struct {
 	Flash
 }

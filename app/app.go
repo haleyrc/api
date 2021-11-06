@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/haleyrc/api/html/controller"
 	"github.com/haleyrc/api/service"
 )
 
@@ -20,11 +21,17 @@ type Server struct {
 	router      *chi.Mux
 	secure      bool
 	templates   struct {
-		Error    template
-		GetBook  template
-		GetBooks template
-		Login    template
+		Error      template
+		GetAuthor  template
+		GetAuthors template
+		GetBook    template
+		GetBooks   template
+		Login      template
+		NewBook    template
+		NewAuthor  template
 	}
+
+	Library *controller.LibraryController
 
 	Books *service.BookService
 	Users *service.UserService
@@ -108,7 +115,9 @@ func (s *Server) init() {
 	s.router = chi.NewRouter()
 	s.router.Use(s.withScope)
 
-	s.router.Get("/", s.GetBooks)
+	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/library/books", 301)
+	})
 
 	s.router.Route("/auth", func(r chi.Router) {
 		r.Get("/logout", s.DoLogout)
@@ -116,16 +125,31 @@ func (s *Server) init() {
 		r.Post("/login", s.DoLogin)
 	})
 
-	s.router.Route("/books", func(r chi.Router) {
-		r.Get("/", s.GetBooks)
-		r.Get("/{id}", s.GetBook)
+	s.router.Route("/library/books", func(r chi.Router) {
+		r.Get("/new", s.Library.NewBook)
+		r.Post("/{id}/delete", s.Library.DeleteBook)
+		r.Get("/{id}", s.Library.GetBook)
+		r.Post("/", s.Library.SaveBook)
+		r.Get("/", s.Library.GetBooks)
+	})
+
+	s.router.Route("/authors", func(r chi.Router) {
+		r.Get("/new", s.NewAuthor)
+		r.Post("/{id}/delete", s.DeleteAuthor)
+		r.Get("/{id}", s.GetAuthor)
+		r.Post("/", s.SaveAuthor)
+		r.Get("/", s.GetAuthors)
 	})
 
 	s.Logger.Println("initializing templates...")
 	s.templates.Error = newTemplate("error")
-	s.templates.GetBook = newTemplate("getbook")
-	s.templates.GetBooks = newTemplate("getbooks")
+	s.templates.GetAuthor = newTemplate("getauthor")
+	s.templates.GetAuthors = newTemplate("getauthors")
+	// s.templates.GetBook = newTemplate("getbook")
+	// s.templates.GetBooks = newTemplate("getbooks")
 	s.templates.Login = newTemplate("login")
+	s.templates.NewAuthor = newTemplate("newauthor")
+	// s.templates.NewBook = newTemplate("newbook")
 
 	s.initialized = true
 }
