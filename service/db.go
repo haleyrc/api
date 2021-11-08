@@ -31,7 +31,6 @@ type Tx interface {
 	SaveBookGenre(ctx context.Context, genre api.BookGenre) error
 	DeleteBookGenre(ctx context.Context, id api.ID) error
 
-	GetUserByID(ctx context.Context, id api.ID) (api.User, error)
-	GetUserByName(ctx context.Context, name string) (api.User, error)
+	GetUser(ctx context.Context, query api.UserQuery) (api.User, error)
 	SaveUser(ctx context.Context, user api.User) error
 }

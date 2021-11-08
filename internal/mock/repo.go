@@ -151,7 +151,17 @@ func (r *Repository) DeleteBookGenre(ctx context.Context, id api.ID) error {
 	return fmt.Errorf("DeleteBookGenre not implemented")
 }
 
-func (r *Repository) GetUserByID(ctx context.Context, id api.ID) (api.User, error) {
+func (r *Repository) GetUser(ctx context.Context, query api.UserQuery) (api.User, error) {
+	if query.ID == "" && query.Name == "" {
+		return api.User{}, fmt.Errorf("get user failed: either id or name must be provided")
+	}
+	if query.ID != "" {
+		return r.getUserByID(ctx, query.ID)
+	}
+	return r.getUserByName(ctx, query.Name)
+}
+
+func (r *Repository) getUserByID(ctx context.Context, id api.ID) (api.User, error) {
 	for _, u := range r.users {
 		if u.ID == id {
 			return u, nil
@@ -160,7 +170,7 @@ func (r *Repository) GetUserByID(ctx context.Context, id api.ID) (api.User, erro
 	return api.User{}, fmt.Errorf("get user by id failed: resource not found")
 }
 
-func (r *Repository) GetUserByName(ctx context.Context, name string) (api.User, error) {
+func (r *Repository) getUserByName(ctx context.Context, name string) (api.User, error) {
 	for _, u := range r.users {
 		if u.Name == name {
 			return u, nil

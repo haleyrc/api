@@ -29,35 +29,44 @@
     color: black;
 }
 
+#content {
+    flex-grow: 1;
+    padding: 24px;
+}
+
 /* Page specific CSS goes here */
 {{ block "page_css" . }}{{ end }}
 {{ end }}
 
 {{ define "layout" }}
-{{ template "header" . }}
-<main id="main">
-    <nav id="sidebar">
-        {{ template "sidebar" . }}
-    </nav>
-    <div>
-        {{ if .Flash }}{{ template "flash" . }}{{ end }}
-        {{ template "content" . }}
-    </div>
-</main>
+    {{ template "header" . }}
+    <main id="main">
+        <nav id="sidebar">
+            {{ template "sidebar" . }}
+        </nav>
+        <div id="content">
+            {{ if .Flash }}{{ template "flash" . }}{{ end }}
+            {{ template "content" . }}
+        </div>
+    </main>
 {{ end }}
 
 {{ define "header" }}
 <header id="appbar">
-    <nav>
+    <div>
         <a href="/">Home</a>
+    </div>
+    <nav>
         <a href="/library/books">Library</a>
     </nav>
 
-    {{ if .User }}
+    <div>
+        {{ if .User }}
         <a href="/auth/logout">Log Out</a>
-    {{ else }}
+        {{ else }}
         <a href="/auth/login">Log In</a>
-    {{ end }}
+        {{ end }}
+    </div>
 </header>
 {{ end }}
 

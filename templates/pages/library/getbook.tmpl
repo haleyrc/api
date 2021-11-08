@@ -1,23 +1,114 @@
-{{ define "library_content" }}
+{{ define "page_css" }}
+#authors {
+    list-style-type: none;
+}
 
-{{ with .Data }}
+.data-row {
+    display: flex;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.data-label {
+    font-weight: bold;
+    margin-right: 24px;
+    width: 30%;
+}
+
+.data-content {
+    flex-grow: 1;
+}
+{{ end }}
+
+{{- define "library_content" -}}
+
+{{- with .Data -}}
 <div>
     <h1>{{ .Book.Title }}</h1>
-    <div>
-        <h2>Authors</h2>
-        <ul>
-        {{ range .Authors }}
-            <li><a href="/library/authors/{{ .ID }}">{{ .Name }}</a></li>
-        {{ end }}
-        </ul>
+
+    {{ if .Book.Subtitle.Valid }}
+    <div class="data-row">
+        <div class="data-label">Subtitle</div>
+        <div class="data-content">{{ .Book.Subtitle.Value }}</div>
     </div>
-    <p>{{ .Book.Format }}</p>
-    <p><a href="/library/genres/{{ .Genre.ID }}">{{ .Genre.Name }}</a></p>
+    {{ end -}}
+
+    <div class="data-row">
+        <div class="data-label">Authors</div>
+        <div class="data-content">
+            <ul id="authors">
+            {{- range .Authors }}
+                <li><a href="/library/authors/{{ .ID }}">{{ .Name }}</a></li>
+            {{ end -}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="data-row">
+        <div class="data-label">Format</div>
+        <div class="data-content">{{ .Book.Format }}</div>
+    </div>
+
+    <div class="data-row">
+        <div class="data-label">Genre</div>
+        <div class="data-content"><a href="/library/genres/{{ .Genre.ID }}">{{ .Genre.Name }}</a></div>
+    </div>
+
+    {{- if .Book.Anthology.Valid }}
+    <div class="data-row">
+        <div class="data-label">Anthology</div>
+        <div class="data-content">{{ .Book.Anthology.Value }}</div>
+    </div>
+    {{ end -}}
+
+    {{- if .Book.ISBN10.Valid }}
+    <div class="data-row">
+        <div class="data-label">ISBN-10</div>
+        <div class="data-content">{{ .Book.ISBN10.Value }}</div>
+    </div>
+    {{ end -}}
+
+    {{- if .Book.ISBN13.Valid }}
+    <div class="data-row">
+        <div class="data-label">ISBN-13</div>
+        <div class="data-content">{{ .Book.ISBN13.Value }}</div>
+    </div>
+    {{ end -}}
+
+    {{- if .Book.Published.Valid }}
+    <div class="data-row">
+        <div class="data-label">Published</div>
+        <div class="data-content">{{ .Book.Published.Value }}</div>
+    </div>
+    {{ end -}}
+
+    {{- if .Book.Publisher.Valid }}
+    <div class="data-row">
+        <div class="data-label">Publisher</div>
+        <div class="data-content">{{ .Book.Publisher.Value }}</div>
+    </div>
+    {{ end -}}
+
+    {{- if .Book.Type.Valid }}
+    <div class="data-row">
+        <div class="data-label">Type</div>
+        <div class="data-content">{{ .Book.Type.Value }}</div>
+    </div>
+    {{ end -}}
+
+    {{- if .Book.Volume.Valid }}
+    <div class="data-row">
+        <div class="data-label">Volume</div>
+        <div class="data-content">{{ .Book.Volume.Value }}</div>
+    </div>
+    {{- end }}
 </div>
 
-<form action="/library/books/{{ .Book.ID }}/delete" method="POST">
-    <button type="submit">Delete</button>
-</form>
-{{ end }}
+<div>
+    <form action="/library/books/{{ .Book.ID }}/delete" method="POST">
+        <button type="submit">Delete</button>
+    </form>
+</div>
+{{- end -}}
 
-{{ end }}
+{{- end -}}

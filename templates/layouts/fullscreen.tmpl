@@ -1,0 +1,38 @@
+{{ define "layout_css" }}
+#appbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 24px 16px;
+}
+
+#main {
+    display: flex;
+    justify-content: stretch;
+    align-items: stretch;
+}
+{{ end }}
+
+{{ define "layout" }}
+{{ template "header" . }}
+{{ template "content" . }}
+{{ end }}
+
+{{ define "header" }}
+<header id="appbar">
+    <div>
+        <a href="/">Home</a>
+    </div>
+
+    {{ if .User }}
+        <nav>
+            <a href="/library/books">Dashboard</a>
+        </nav>
+        <div>
+            <a href="/auth/logout">Log Out</a>
+        </div>
+    {{ else }}
+        <a href="/auth/login">Log In</a>
+    {{ end }}
+</header>
+{{ end }}

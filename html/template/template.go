@@ -28,11 +28,8 @@ func New(layout string, files ...string) *Template {
 		"dump": func(data interface{}) string {
 			return spew.Sdump(data)
 		},
-		"current_year": func(input string) string {
+		"current_year": func() string {
 			return fmt.Sprint(time.Now().Year())
-		},
-		"CurrentYear": func() string {
-			return "2021"
 		},
 	}
 

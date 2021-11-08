@@ -1,8 +1,8 @@
-{{ define "sidebar" }}
-<a href="/library/books">Books</a>
-<a href="/library/authors">Authors</a>
-{{ end }}
+{{- define "sidebar" -}}
+            <a href="/library/books">Books</a>
+            <a href="/library/authors">Authors</a>
+{{- end -}}
 
-{{ define "content" }}
-{{ template "library_content" . }}
-{{ end }}
+{{- define "content" -}}
+    {{- template "library_content" . -}}
+{{- end -}}
