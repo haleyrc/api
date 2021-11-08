@@ -7,6 +7,7 @@ import (
 
 	"github.com/haleyrc/api"
 	"github.com/haleyrc/api/html"
+	"github.com/haleyrc/api/library"
 )
 
 type CookieJar interface {
@@ -18,12 +19,12 @@ type ErrorFunc func(context.Context, error) string
 
 type LibraryRepository interface {
 	DeleteBook(ctx context.Context, id api.ID) error
-	GetAuthors(ctx context.Context, filter api.AuthorsFilter) ([]api.Author, error)
-	GetBook(ctx context.Context, id api.ID) (api.Book, error)
-	GetBooks(ctx context.Context, filter api.BooksFilter) ([]api.Book, uint, error)
-	GetGenre(ctx context.Context, id api.ID) (api.BookGenre, error)
-	GetGenres(ctx context.Context) ([]api.BookGenre, error)
-	SaveBook(ctx context.Context, book api.Book) error
+	GetAuthors(ctx context.Context, filter library.AuthorsFilter) ([]library.Author, error)
+	GetBook(ctx context.Context, id api.ID) (library.Book, error)
+	GetBooks(ctx context.Context, filter library.BooksFilter) ([]library.Book, uint, error)
+	GetGenre(ctx context.Context, id api.ID) (library.Genre, error)
+	GetGenres(ctx context.Context) ([]library.Genre, error)
+	SaveBook(ctx context.Context, book library.Book) error
 }
 
 type Renderer interface {

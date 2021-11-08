@@ -11,6 +11,7 @@ import (
 
 	"github.com/haleyrc/api"
 	"github.com/haleyrc/api/html/template"
+	"github.com/haleyrc/api/library"
 )
 
 func NewLibraryController(
@@ -58,14 +59,14 @@ func (c *LibraryController) DeleteBook(w http.ResponseWriter, r *http.Request) {
 
 type GetBooksData struct {
 	Error      string
-	Books      []api.Book
+	Books      []library.Book
 	TotalBooks uint
 }
 
 func (c *LibraryController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	books, count, err := c.Library.GetBooks(ctx, api.BooksFilter{})
+	books, count, err := c.Library.GetBooks(ctx, library.BooksFilter{})
 	if err != nil {
 		c.ReportError(ctx, err)
 		c.Render(ctx, w, 500, c.BooksPage, GetBooksData{
@@ -82,9 +83,9 @@ func (c *LibraryController) GetBooks(w http.ResponseWriter, r *http.Request) {
 
 type GetBookData struct {
 	Error   string
-	Authors []api.Author
-	Book    api.Book
-	Genre   api.BookGenre
+	Authors []library.Author
+	Book    library.Book
+	Genre   library.Genre
 }
 
 func (c *LibraryController) GetBook(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +101,7 @@ func (c *LibraryController) GetBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authors, err := c.Library.GetAuthors(ctx, api.AuthorsFilter{
+	authors, err := c.Library.GetAuthors(ctx, library.AuthorsFilter{
 		IDs: book.Authors,
 	})
 	if err != nil {
@@ -128,18 +129,18 @@ func (c *LibraryController) GetBook(w http.ResponseWriter, r *http.Request) {
 }
 
 type NewBookData struct {
-	Error   string
-	Authors []api.Author
-	Book    api.Book
-	Formats []api.BookFormat
-	Genres  []api.BookGenre
-	Types   []api.BookType
+	Error      string
+	Authors    []library.Author
+	Book       library.Book
+	Categories []library.Category
+	Formats    []library.Format
+	Genres     []library.Genre
 }
 
 func (c *LibraryController) NewBook(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	authors, err := c.Library.GetAuthors(ctx, api.AuthorsFilter{})
+	authors, err := c.Library.GetAuthors(ctx, library.AuthorsFilter{})
 	if err != nil {
 		c.ReportError(ctx, err)
 		c.Render(ctx, w, 500, c.NewBookPage, NewBookData{
@@ -159,12 +160,12 @@ func (c *LibraryController) NewBook(w http.ResponseWriter, r *http.Request) {
 
 	c.Render(ctx, w, 200, c.NewBookPage, NewBookData{
 		Authors: authors,
-		Book: api.Book{
+		Book: library.Book{
 			Title: "Lord Of The Rings",
 		},
-		Formats: []api.BookFormat{api.Hardcover, api.Paperback, api.PDF},
-		Genres:  genres,
-		Types:   []api.BookType{api.ComicBook, api.Novel, api.Reference},
+		Categories: []library.Category{library.ComicBook, library.Novel, library.Reference},
+		Formats:    []library.Format{library.Hardcover, library.Paperback, library.PDF},
+		Genres:     genres,
 	})
 }
 
@@ -176,8 +177,8 @@ func (c *LibraryController) SaveBook(w http.ResponseWriter, r *http.Request) {
 	// TODO: validation
 	authorID := api.ID(strings.TrimSpace(r.PostFormValue("authorID")))
 	// TODO: render error
-	bookType, _ := parseBookType(r.PostFormValue("type"))
-	format := api.BookFormat(strings.TrimSpace(r.PostFormValue("format")))
+	bookType, _ := parseCategory(r.PostFormValue("type"))
+	format := library.Format(strings.TrimSpace(r.PostFormValue("format")))
 	genreID := api.ID(strings.TrimSpace(r.PostFormValue("genreID")))
 	isbn10 := strings.TrimSpace(r.PostFormValue("isbn10"))
 	isbn13 := strings.TrimSpace(r.PostFormValue("isbn13"))
@@ -188,7 +189,7 @@ func (c *LibraryController) SaveBook(w http.ResponseWriter, r *http.Request) {
 	// TODO: render error
 	volume, _ := parseInt(r.PostFormValue("volume"))
 
-	book := api.Book{
+	book := library.Book{
 		ID:      api.NewID(),
 		Genre:   genreID,
 		Authors: []api.ID{authorID},
@@ -248,18 +249,18 @@ func parseInt(s string) (api.MaybeInt, error) {
 	}, nil
 }
 
-func parseBookType(s string) (api.MaybeBookType, error) {
+func parseCategory(s string) (library.MaybeCategory, error) {
 	s = strings.TrimSpace(s)
 	// Blank string means we got nothing, which is the value for the "None"
 	// dropdown option
 	if s == "" {
-		return api.MaybeBookType{}, nil
+		return library.MaybeCategory{}, nil
 	}
-	bookType := api.BookType(s)
+	bookType := library.Category(s)
 	if !bookType.Valid() {
-		return api.MaybeBookType{}, fmt.Errorf("parseBookType: invalid: %s", s)
+		return library.MaybeCategory{}, fmt.Errorf("parseCategory: invalid: %s", s)
 	}
-	return api.MaybeBookType{
+	return library.MaybeCategory{
 		Valid: true,
 		Value: bookType,
 	}, nil

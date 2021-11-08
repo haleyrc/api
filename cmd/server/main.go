@@ -12,6 +12,7 @@ import (
 	"github.com/haleyrc/api/html/controller/mw"
 	"github.com/haleyrc/api/html/cookies"
 	"github.com/haleyrc/api/internal/mock"
+	"github.com/haleyrc/api/library"
 	"github.com/haleyrc/api/log"
 )
 
@@ -67,26 +68,26 @@ func run() error {
 }
 
 func seed(ctx context.Context, repo *mock.Repository) {
-	bookGenres := []api.BookGenre{
+	bookGenres := []library.Genre{
 		{ID: api.NewID(), Name: "Adventure"},
 	}
 	for _, genre := range bookGenres {
 		repo.SaveBookGenre(ctx, genre)
 	}
 
-	authors := []api.Author{
+	authors := []library.Author{
 		{ID: "9fccbac5-562c-4af3-9a95-1556b9d54e10", Name: "Herman Melville"},
 	}
 	for _, author := range authors {
 		repo.SaveAuthor(ctx, author)
 	}
 
-	books := []api.Book{{
+	books := []library.Book{{
 		ID:      "44e3befa-b9ea-4d95-a4b3-dbbce9771e49",
 		Authors: []api.ID{authors[0].ID},
 		Genre:   bookGenres[0].ID,
 		Title:   "Moby Dick",
-		Format:  api.Hardcover,
+		Format:  library.Hardcover,
 	}}
 	for _, book := range books {
 		repo.SaveBook(ctx, book)

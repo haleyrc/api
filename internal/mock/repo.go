@@ -6,39 +6,32 @@ import (
 	"time"
 
 	"github.com/haleyrc/api"
-	"github.com/haleyrc/api/service"
+	"github.com/haleyrc/api/library"
 )
 
 type Repository struct {
-	authors     []api.Author
-	books       []api.Book
+	authors     []library.Author
+	books       []library.Book
 	bookAuthors map[api.ID][]api.ID
-	bookGenres  []api.BookGenre
+	bookGenres  []library.Genre
 	users       []api.User
 }
 
-func (r *Repository) RunInTransaction(ctx context.Context, f func(ctx context.Context, tx service.Tx) error) error {
-	return f(ctx, r)
-}
+// func (r *Repository) RunInTransaction(ctx context.Context, f func(ctx context.Context, tx service.Tx) error) error {
+// 	return f(ctx, r)
+// }
 
-func (r *Repository) GetAuthor(ctx context.Context, id api.ID) (api.Author, error) {
+func (r *Repository) GetAuthor(ctx context.Context, id api.ID) (library.Author, error) {
 	for _, author := range r.authors {
 		if author.ID == id {
-			for _, authors := range r.bookAuthors {
-				for _, a := range authors {
-					if a == author.ID {
-						author.NumBooks++
-					}
-				}
-			}
 			return author, nil
 		}
 	}
-	return api.Author{}, fmt.Errorf("get author failed: resource not found")
+	return library.Author{}, fmt.Errorf("get author failed: resource not found")
 }
 
-func (r *Repository) GetAuthors(ctx context.Context, filter api.AuthorsFilter) ([]api.Author, error) {
-	authors := []api.Author{}
+func (r *Repository) GetAuthors(ctx context.Context, filter library.AuthorsFilter) ([]library.Author, error) {
+	authors := []library.Author{}
 	for _, author := range r.authors {
 		if filter.IDs != nil && len(filter.IDs) > 0 {
 			if !author.ID.In(filter.IDs) {
@@ -50,7 +43,7 @@ func (r *Repository) GetAuthors(ctx context.Context, filter api.AuthorsFilter) (
 	return authors, nil
 }
 
-func (r *Repository) SaveAuthor(ctx context.Context, author api.Author) error {
+func (r *Repository) SaveAuthor(ctx context.Context, author library.Author) error {
 	r.authors = append(r.authors, author)
 	return nil
 }
@@ -59,17 +52,17 @@ func (r *Repository) DeleteAuthor(ctx context.Context, id api.ID) error {
 	return fmt.Errorf("DeleteAuthor not implemented")
 }
 
-func (r *Repository) GetBook(ctx context.Context, id api.ID) (api.Book, error) {
+func (r *Repository) GetBook(ctx context.Context, id api.ID) (library.Book, error) {
 	for _, book := range r.books {
 		if book.ID == id {
 			return book, nil
 		}
 	}
-	return api.Book{}, fmt.Errorf("get book failed: resource not found")
+	return library.Book{}, fmt.Errorf("get book failed: resource not found")
 }
 
-func (r *Repository) GetBooks(ctx context.Context, filter api.BooksFilter) ([]api.Book, uint, error) {
-	books := []api.Book{}
+func (r *Repository) GetBooks(ctx context.Context, filter library.BooksFilter) ([]library.Book, uint, error) {
+	books := []library.Book{}
 	for _, book := range r.books {
 		if filter.Author.Valid {
 			if !book.HasAuthorWithID(filter.Author.Value) {
@@ -81,7 +74,7 @@ func (r *Repository) GetBooks(ctx context.Context, filter api.BooksFilter) ([]ap
 	return books, uint(len(books)), nil
 }
 
-func (r *Repository) SaveBook(ctx context.Context, book api.Book) error {
+func (r *Repository) SaveBook(ctx context.Context, book library.Book) error {
 	r.books = append(r.books, book)
 	return nil
 }
@@ -121,28 +114,28 @@ func (r *Repository) FinishBook(ctx context.Context, user, book api.ID, timestam
 	return fmt.Errorf("FinishBook not implemented")
 }
 
-func (r *Repository) GetGenre(ctx context.Context, id api.ID) (api.BookGenre, error) {
+func (r *Repository) GetGenre(ctx context.Context, id api.ID) (library.Genre, error) {
 	for _, genre := range r.bookGenres {
 		if genre.ID == id {
 			return genre, nil
 		}
 	}
-	return api.BookGenre{}, fmt.Errorf("get book genre failed: resource not found")
+	return library.Genre{}, fmt.Errorf("get book genre failed: resource not found")
 }
 
-func (r *Repository) GetBookGenre(ctx context.Context, id api.ID) (api.BookGenre, error) {
+func (r *Repository) GetBookGenre(ctx context.Context, id api.ID) (library.Genre, error) {
 	return r.GetGenre(ctx, id)
 }
 
-func (r *Repository) GetGenres(ctx context.Context) ([]api.BookGenre, error) {
+func (r *Repository) GetGenres(ctx context.Context) ([]library.Genre, error) {
 	return r.bookGenres, nil
 }
 
-func (r *Repository) GetBookGenres(ctx context.Context) ([]api.BookGenre, error) {
+func (r *Repository) GetBookGenres(ctx context.Context) ([]library.Genre, error) {
 	return r.GetGenres(ctx)
 }
 
-func (r *Repository) SaveBookGenre(ctx context.Context, genre api.BookGenre) error {
+func (r *Repository) SaveBookGenre(ctx context.Context, genre library.Genre) error {
 	r.bookGenres = append(r.bookGenres, genre)
 	return nil
 }
